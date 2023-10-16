@@ -1,6 +1,7 @@
 
 import java.io.*;
 import java.util.*;
+import java.time.LocalDate;
 
 
 /*
@@ -12,7 +13,13 @@ import java.util.*;
 public class Main {
 
     private static File file;
-    private static ArrayList<Books> bo = new ArrayList<>();
+    public static ArrayList<Books> bo = new ArrayList<>();
+
+
+    // clearBo method used to clear the books array inside the test class (for Testing Purposes ONLY!!!)
+    public static void clearBo() {
+        bo.clear();
+    }
 
     public static void main(String[] args) {
         System.out.println("Hello, World!");
@@ -58,11 +65,13 @@ public class Main {
                     System.out.println("INVALID CHOICE !!");
             }
         }
-// second menu options to choose options like inserting a book or deleting a book by barcode
+// second menu options to choose options like inserting a book or deleting a book by barcode or checking out a book
         while (!exitLoop2) {
             System.out.println("1. INSERT A NEW BOOK");
             System.out.println("2. DELETE A BOOK");
             System.out.println("3. DISPLAY ALL BOOKS");
+            System.out.println("4. CHECK OUT A BOOKS");
+            System.out.println("5. CHECK IN A BOOKS");
             System.out.println("0. EXIT");
 
             int choicefrom4 = scanner.nextInt();
@@ -77,37 +86,43 @@ public class Main {
 
                     System.out.println("Enter book AUTHOR!");
                     String author = scanner.next();
-                    bo.add(new Books(barcode, title, author));
+
+
+                    addingBooks(barcode , title , author);
                     saveBooksToFile(bo, file);
                     break;
 
                 case 2:
+
                     System.out.println("Enter book ID to delete:");
                     int barcodeToDelete = scanner.nextInt();
 
-                    // Finding and removing the book with the specified ID
-                    boolean removed = false;
-                    Iterator<Books> iterator = bo.iterator();
-                    while (iterator.hasNext()) {
-                        Books book = iterator.next();
-                        if (book.getBarcode() == barcodeToDelete) {
-                            iterator.remove();
-                            removed = true;
-                            break;
-                        }
-                    }
-                    if (removed) {
-                        System.out.println("Book with ID " + barcodeToDelete + " has been deleted.");
-                    } else {
-                        System.out.println("Book with ID " + barcodeToDelete + " not found.");
-                    }
+                    deletingBooks(barcodeToDelete);
                     saveBooksToFile(bo, file);
                     break;
 
                 case 3:
                     System.out.println("3. DISPLAYING .....");
                     displayBooks(bo);
+                    if (bo.size() == 0) {
+                        System.out.println("NO AVAILABLE BOOKS TO DISPLAY !!!");
+                    }
                     break;
+
+                case 4:
+                    System.out.println("Enter book ID to check out:");
+                    int barcodeToCheckOut = scanner.nextInt();
+
+                    checkOutBook(barcodeToCheckOut) ;
+                    saveBooksToFile(bo, file);
+                    break ;
+
+                case 5:
+                    System.out.println("Enter book ID to check out:");
+                    int barcodeToCheckIN = scanner.nextInt();
+                    checkInBook(barcodeToCheckIN) ;
+                    saveBooksToFile(bo, file);
+                    break ;
 
                 case 0:
                     saveBooksToFile(bo, file);
@@ -183,6 +198,108 @@ public class Main {
             System.out.println(book);
         }
     }
+
+
+
+    // this method deletes a book by barcode
+     static void deletingBooks (int barcodeToDelete) {
+
+        boolean removed = false ;
+        Iterator<Books> iterator =  bo.iterator() ;
+
+        while (iterator.hasNext()) {
+            Books book  = iterator.next() ;
+
+            if (book.getBarcode() == barcodeToDelete) {
+                iterator.remove();
+                removed = true ;
+                break ;
+            }
+        }
+
+        if (removed) {
+            System.out.println("Book with ID " + barcodeToDelete + " has been deleted.");
+        } else {
+            System.out.println("Book with ID " + barcodeToDelete + " not found.");
+        }
+
+       // saveBooksToFile(bo, file);
+
+    }
+
+
+
+// this methods adds books
+    public static void addingBooks(int barcode, String title, String author){
+
+        bo.add(new Books(barcode, title, author));
+
+
+    }
+
+
+
+// this method checks out books by id and provide the due date if successfully checked out
+    // if check out is not successfull, due date remains null
+  public  static LocalDate  checkOutBook(int barcode) {
+      LocalDate currentDate = LocalDate.now();
+      LocalDate dueDate = null;
+      int testo = 1;
+      for (int i = 0; i < bo.size(); i++) {
+          if (bo.get(i).getBarcode() == barcode) {
+              dueDate = currentDate.plusDays(14);
+              System.out.println("Checking OUT:");
+              System.out.println(bo.get(i).getBarcode() + " " + bo.get(i).getTitle() + " " + bo.get(i).getAuthor() + " ");
+              System.out.println("Checked OUT in : " + currentDate);
+              System.out.println("MUST BE RETURNED BY: " + dueDate);
+              System.out.println("Thank You!!!");
+
+
+          }
+
+
+      }
+      if (dueDate == null) {
+          System.out.println("Book with barcode " + barcode + " not found!!!.");
+      }
+     // System.out.println("Book with barcode " + barcode + " not found!!!.");
+      return dueDate;
+  }
+
+
+  public static LocalDate checkInBook (int barcode) {
+      LocalDate currentDate = LocalDate.now();
+      LocalDate dueDate ;
+      boolean checkIn = false ;
+      for (int i = 0; i < bo.size(); i++) {
+          if (bo.get(i).getBarcode() == barcode) {
+             // dueDate = currentDate.plusDays(14);
+              System.out.println("Checking IN:");
+              System.out.println(bo.get(i).getBarcode() + " " + bo.get(i).getTitle() + " " + bo.get(i).getAuthor() + " ");
+              System.out.println("Check in Date : " + currentDate);
+             checkIn = true ;
+              System.out.println("Thank You!!!");
+
+
+          }
+
+      }
+
+      if (checkIn) {
+          System.out.println("Book with barcode " + barcode + " is checked in!!!.");
+          dueDate = null ;
+      }
+
+      else {
+
+          System.out.println("Book with barcode " + barcode + " is NOT FOUND!!!.");
+          dueDate = currentDate.plusDays(14) ;
+      }
+
+      return dueDate ;
+  }
+
+
 
 }
 
